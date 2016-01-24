@@ -186,7 +186,7 @@ void init(void)
 	}
 	nut_coef = 0.1;
 	nut_reversible = 0;
-	aver_nut = 0.00175;
+	aver_nut = 0.01;
 	// aver_nut = 1.0;
 
 
@@ -247,6 +247,7 @@ Cell internal(Cell p)
 	double new_nut_con = prev_nut_con;
 
 	//細胞内外の栄養の流出入
+	// cout << pow(p.size, - 1.0 / 3.0) << endl;
 	new_nut_con += time_bunkai * nut_coef * pow(p.size, - 1.0 / 3.0) * (prev_outside_nut_con - prev_nut_con);
 	new_outside_nut_con -= time_bunkai * nut_coef * pow(p.size, - 1.0 / 3.0) * (prev_outside_nut_con - prev_nut_con) * p.size / box_size;
 
@@ -325,6 +326,7 @@ void evolve(void)
 	}
 	cell[cell_number].size = get_size(cell[cell_number]);
 	cell[cell_number].init_last = cell[cell_number].mol[N - 1];
+	cell[cell_number].init_last_con = cell[cell_number].mol[N - 1] / cell[cell_number].size;
 
 	cell_type++;
 	cell_number++;
@@ -378,7 +380,12 @@ void process(int t)
 	}
 
 	//loop回してreaction
-	rep(i, cell_number) cell[i] = internal(cell[i]);
+	rep(i, cell_number) {
+		if (cell[i].size == 0) {
+			cell[i] = cell[cell_number - 1];
+			cell_number--;
+		} else cell[i] = internal(cell[i]);
+	}
 
 	//sizeが2倍以上またはmaxを越えたら分裂、半分になったら消滅
 	rep(i, cell_number) {
@@ -437,21 +444,25 @@ void process(int t)
 	if (t >= time_end * 0.2) pop_sum += x / y;
 
 	vector<vector<double>> keep8(cell_type);
-	rep(i, cell_number) keep8[cell[i].type].push_back(cell[i].mol[7] / cell[i].size);
+	// cout << cell[0].mol[7] << endl;
+	rep(i, cell_number) {
+		if (cell[i].size != 0) keep8[cell[i].type].push_back(cell[i].mol[7] / cell[i].size);
+	}
 	rep(i, cell_type) {
 		vector<double> sum8(cell_type, 0);
 		rep(j, (int)keep8[i].size()) sum8[i] += keep8[i][j];
-		take_log_inside << sum8[i] / (double)keep8[i].size() << " ";
+		if (keep8[i].size() != 0) take_log_inside << sum8[i] / (double)keep8[i].size() << " ";
+		else take_log_inside << 0 << " ";
 	}
 	take_log_inside << endl;
 }
 	
-	
+
 
 int main(void)
 {
 	//randomの種を与える
-	srand(40);
+	srand(10);
 
 	//run_time回だけ走らせる
 	rep(l, run_time) {
