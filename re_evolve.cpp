@@ -11,12 +11,12 @@
 using namespace std;
 
 namespace {
-	ofstream take_log_type("data_re_evolve_type_number10_test.log");
-	ofstream take_log_network("data_re_evolve_network10_test.log");
-	ofstream take_log_outside("data_re_evolve_outside10_test.log");
-	ofstream take_log_devdev("data_re_evolve_devdev10_test.log");
-	ofstream take_log_coef("data_re_evolve_coef10_test.log");
-	ofstream take_log_inside("data_re_evolve_inside10_test.log");
+	ofstream take_log_type("data_long_type_number10_0.001.log");
+	ofstream take_log_network("data_long_network10_0.001.log");
+	ofstream take_log_outside("data_long_outside10_0.001.log");
+	ofstream take_log_devdev("data_long_devdev10_0.001.log");
+	ofstream take_log_coef("data_long_coef10_0.001.log");
+	ofstream take_log_inside("data_long_inside10_0.001.log");
 }
 
 
@@ -44,7 +44,7 @@ double get_rand_normal(double size)
 
 const int cell_max = 100;
 int cell_type = 1;
-const int time_end = 100000;
+const int time_end = 1000000;
 const double time_bunkai = 0.1;
 const int run_time = 1;
 const int init_box_size = 1200;
@@ -116,7 +116,7 @@ double get_box_size(void)
 	return init_box_size - sum;
 }
 
-array<array<double, N>, 1000> begin_coef;
+array<array<double, N>, 10000> begin_coef;
 
 void sum_ten_init(void)
 {
@@ -186,7 +186,7 @@ void init(void)
 	}
 	nut_coef = 0.1;
 	nut_reversible = 0;
-	aver_nut = 0.01;
+	aver_nut = 0.0001;
 	// aver_nut = 1.0;
 
 
@@ -312,7 +312,7 @@ void evolve(void)
 		cell[get] = cell[cell_number];
 	}
 
-	cell[cell_number].nut_zero_coef = begin_coef.at(0).at(1);
+	cell[cell_number].nut_zero_coef = begin_coef.at(cell_type).at(1);
 	cell[cell_number].type = cell_type;
 	rep(j, N) {
 		cell[cell_number].mol[j] = 0.2;

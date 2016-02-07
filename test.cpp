@@ -17,8 +17,9 @@ namespace {
 	ofstream take_log_devdev("data_test_devdev10.log");
 	ofstream take_log_coef("data_test_coef10.log");
 	ofstream take_log_inside("data_test_inside10.log");
-	ofstream take_log_hostdev("data_test_hostdev10_min_locked.log");
-	ofstream take_log_win("data_test_win10_case2_0.4.log");
+	ofstream take_log_hostdev("data_test_hostdev1_0.1.log");
+	ofstream take_log_otherdev("data_test_otherdev1_0.1.log");
+	// ofstream take_log_win("data_test_win.log");
 }
 
 
@@ -45,7 +46,7 @@ double get_rand_normal(double size)
 }
 
 const int cell_max = 100;
-int cell_type = 2;
+int cell_type;
 const int time_end = 100000;
 const double time_bunkai = 0.1;
 const int run_time = 1;
@@ -97,6 +98,7 @@ int _count = 0;
 int count_ = 0;
 
 int host_dev = 0;
+int other_dev = 0;
 
 double decide_box_nut(int time)
 {
@@ -174,6 +176,8 @@ void network(void)
 
 void init(void)
 {
+	cell_type = 1;
+
 	//defをいれておいて、typeカウントを防ぐ
 	def.type = - 1;
 	rep(i, N) cell[i] = def;
@@ -192,7 +196,7 @@ void init(void)
 	}
 	nut_coef = 0.1;
 	nut_reversible = 0;
-	aver_nut = 0.001;
+	aver_nut = 0.1;
 	// aver_nut = 1.0;
 
 
@@ -216,8 +220,8 @@ void init(void)
 			}
 		}
 		rep(j, N) {
-			cell[i].go[j] = (j % 3 / 2) * 0.4;
-			if (i == 1) cell[i].go[8] = 0;
+			cell[i].go[j] = (j % 3 / 2) * 1;
+			// if (i == 1) cell[i].go[8] = 0;
 		}
 		cell[i].size = get_size(cell[i]);
 		cell[i].init_last = cell[i].mol[N - 1];
@@ -398,6 +402,7 @@ void process(int t)
 	rep(i, cell_number) {
 		if (/* cell[i].size > max_cell_size ||*/ cell[i].mol[N - 1] > 2 * cell[i].init_last) {
 			if (cell[i].type == 0) host_dev++;
+			else other_dev++;
 			devdev++;
 			if (cell[i].mol[N - 1] > 2 * cell[i].init_last) _count++;
 			else count_++;
@@ -466,6 +471,7 @@ void process(int t)
 }
 	
 int prev_host_dev = 0;
+int prev_other_dev = 0;
 int aver_num = 0;
 
 int main(void)
@@ -481,10 +487,12 @@ int main(void)
 			devdev = 0;
 			process(t);
 			aver_num += a[0];
-			take_log_win << a[0] - a[1] << endl;
+			// take_log_win << a[0] - a[1] << endl;
 			if (t % 1000 == 0) {
 				take_log_hostdev << (double)(host_dev - prev_host_dev) / (double)aver_num << endl;
+				take_log_otherdev << (double)(other_dev - prev_other_dev) / (double)(cell_number - aver_num) << endl;
 				prev_host_dev = host_dev;
+				prev_other_dev = other_dev;
 				aver_num = 0;
 			}
 			rep(i, N) {
