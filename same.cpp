@@ -44,7 +44,7 @@ double get_rand_normal(double size)
 
 const int cell_max = 100;
 int cell_type = 1;
-const int time_end = 100000;
+const int time_end = 1000000;
 const double time_bunkai = 0.1;
 const int run_time = 1;
 const int init_box_size = 1200;
@@ -92,6 +92,8 @@ double go[N];
 
 int _count = 0;
 int count_ = 0;
+
+int coexist = 0;
 
 double decide_box_nut(int time)
 {
@@ -186,7 +188,7 @@ void init(void)
 	}
 	nut_coef = 0.1;
 	nut_reversible = 0;
-	aver_nut = 0.0005;
+	aver_nut = 0.0001;
 	// aver_nut = 1.0;
 
 
@@ -314,20 +316,14 @@ void evolve(void)
 	// 	cell[get] = cell[cell_number];
 	// }
 
-	cell[get].nut_zero_coef = begin_coef.at(0).at(1);
+	cell[get].nut_zero_coef = begin_coef.at(cell_type).at(1);
 	cell[get].type = cell_type;
 
-	// rep(j, N) {
-	// 	cell[cell_number].nut_cat = N - 3;
-	// 	if (j != N - 1) {
-	// 		cell[cell_number].coef[j][j + 1] = begin_coef.at(cell_type).at(j + 1);
-	// 		cell[cell_number].catalyst[j][j + 1] = (j - 2 + N) % N;
-	// 		reversible[cell_number][j + 1] = 0;
-	// 	}
-	// }
-	// cell[cell_number].size = get_size(cell[cell_number]);
-	// cell[cell_number].init_last = cell[cell_number].mol[N - 1];
-	// cell[cell_number].init_last_con = cell[cell_number].mol[N - 1] / cell[cell_number].size;
+	rep(j, N) {
+		if (j != N - 1) {
+			cell[get].coef[j][j + 1] = begin_coef.at(cell_type).at(j + 1);
+		}
+	}
 
 	cell_type++;
 	// cell_number++;
@@ -506,7 +502,12 @@ int main(void)
 			take_log_outside << endl;
 			take_log_devdev << devdev << endl;
 
-			if (t % 2000 == 1000) evolve();
+			if (t % 20000 == 1000) {
+				int count_alive = 0;
+				rep(i, cell_type) if (a[i]) count_alive++;
+				coexist += count_alive;
+				evolve();
+			}
 		}
 	}
 
@@ -530,6 +531,7 @@ int main(void)
 	cout << endl << _count << " " << count_ << endl << endl;
 
 	cout << "% = " << pop_sum / ((double)time_end * 0.8) << endl;
+	cout << "coexist = " << (double)coexist / (double)(time_end / 20000) << endl << endl;
 	return 0;
 }
 

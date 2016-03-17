@@ -182,7 +182,7 @@ void init(void)
 	rep(i, N) {
 		outside[i] = 0;
 		coef_decrease[i] = 0;
-		if (i == 2 || i == 5) go[i] = 1;
+		if (i == 1) go[i] = 1;
 		else go[i] = 0;
 	}
 	nut_coef = 0.1;

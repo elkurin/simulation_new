@@ -256,7 +256,7 @@ Cell internal(Cell p)
 	new_nut_con -= time_bunkai * p.nut_zero_coef * prev_nut_con * prev_con[p.nut_cat];
 	rep(i, N - 1) {
 		new_con[i + 1] += time_bunkai * p.coef[i][i + 1] * prev_con[i] * prev_con[p.catalyst[i][i + 1]];
-		prev_con[i] -= time_bunkai * p.coef[i][i + 1] * prev_con[i] * prev_con[p.catalyst[i][i + 1]];
+		new_con[i] -= time_bunkai * p.coef[i][i + 1] * prev_con[i] * prev_con[p.catalyst[i][i + 1]];
 	}
 	
 	//可逆反応
@@ -312,7 +312,7 @@ void evolve(void)
 		cell[get] = cell[cell_number];
 	}
 
-	cell[cell_number].nut_zero_coef = begin_coef.at(cell_type).at(1);
+	cell[cell_number].nut_zero_coef = begin_coef.at(0).at(1);
 	cell[cell_number].type = cell_type;
 	rep(j, N) {
 		cell[cell_number].mol[j] = 0.2;

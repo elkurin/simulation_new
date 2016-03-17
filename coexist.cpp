@@ -11,12 +11,12 @@
 using namespace std;
 
 namespace {
-	ofstream take_log_type("data_long_type_number10_0.001.log");
-	ofstream take_log_network("data_long_network10_0.001.log");
-	ofstream take_log_outside("data_long_outside10_0.001.log");
-	ofstream take_log_devdev("data_long_devdev10_0.001.log");
-	ofstream take_log_coef("data_long_coef10_0.001.log");
-	ofstream take_log_inside("data_long_inside10_0.001.log");
+	ofstream take_log_type("data_coexist_type_number10_0.0015.log");
+	ofstream take_log_network("data_coexist_network10_0.0015.log");
+	ofstream take_log_outside("data_coexist_outside10_0.0015.log");
+	ofstream take_log_devdev("data_coexist_devdev10_0.0015.log");
+	ofstream take_log_coef("data_coexist_coef10_0.0015.log");
+	ofstream take_log_inside("data_coexist_inside10_0.0015.log");
 }
 
 
@@ -92,6 +92,8 @@ double go[N];
 
 int _count = 0;
 int count_ = 0;
+
+int coexist = 0;
 
 double decide_box_nut(int time)
 {
@@ -186,7 +188,7 @@ void init(void)
 	}
 	nut_coef = 0.1;
 	nut_reversible = 0;
-	aver_nut = 0.0001;
+	aver_nut = 0.0005;
 	// aver_nut = 1.0;
 
 
@@ -505,7 +507,12 @@ int main(void)
 			take_log_outside << endl;
 			take_log_devdev << devdev << endl;
 
-			if (t % 2000 == 1000) evolve();
+			if (t % 20000 == 1000) {
+				int count_alive = 0;
+				rep(i, cell_type) if (a[i]) count_alive++;
+				coexist += count_alive;
+				evolve();
+			}
 		}
 	}
 
@@ -529,6 +536,8 @@ int main(void)
 	cout << endl << _count << " " << count_ << endl << endl;
 
 	cout << "% = " << pop_sum / ((double)time_end * 0.8) << endl;
+
+	cout << "coexist = " << (double)coexist / (double)(time_end / 20000) << endl << endl;
 	return 0;
 }
 
