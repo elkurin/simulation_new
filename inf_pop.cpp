@@ -11,18 +11,19 @@
 using namespace std;
 
 namespace {
-	ofstream take_log_type("data_test_type_number10_0.01.log");
-	ofstream take_log_network("data_test_network10_0.01.log");
-	ofstream take_log_outside("data_test_outside10_0.01.log");
-	ofstream take_log_devdev("data_test_devdev10_0.01.log");
-	ofstream take_log_coef("data_test_coef10_0.01.log");
-	ofstream take_log_inside("data_test_inside10_0.01.log");
-	ofstream take_log_inside1("data_test_inside1_0.01.log");
-	ofstream take_log_inside2("data_test_inside2_0.01.log");
-	ofstream take_log_inside3("data_test_inside3_0.01.log");
-	ofstream take_log_come("data_test_come.log");
-	ofstream take_log_up("data_test_up.log");
-	ofstream take_log_sum("data_test_sum.log");
+	ofstream take_log_type("data_test2_type_number10_0.01.log");
+	ofstream take_log_network("data_test2_network10_0.01.log");
+	ofstream take_log_outside("data_test2_outside10_0.01.log");
+	ofstream take_log_devdev("data_test2_devdev10_0.01.log");
+	ofstream take_log_coef("data_test2_coef10_0.01.log");
+	ofstream take_log_inside("data_test2_inside10_0.01.log");
+	ofstream take_log_inside1("data_test2_inside1_0.01.log");
+	ofstream take_log_inside2("data_test2_inside2_0.01.log");
+	ofstream take_log_inside3("data_test2_inside3_0.01.log");
+	ofstream take_log_come("data_test2_come.log");
+	ofstream take_log_up("data_test2_up.log");
+	ofstream take_log_sum("data_test2_sum.log");
+	ofstream take_log_boxcon("data_test2_boxcon.log");
 }
 
 
@@ -50,7 +51,7 @@ double get_rand_normal(double size)
 
 const int cell_max = 1000;
 int cell_type = 1;
-const int time_end = 1000000;
+const int time_end = 10000000;
 const double time_bunkai = 0.01;
 const int run_time = 1;
 
@@ -157,8 +158,7 @@ void init(void)
 	rep(i, N) cell[i] = def;
 
 	//coefの決め方
-	//all_init();
-	one_init(0);
+	all_init();
 	rep(i, 50) sum_init(i + 1, 1);
 
 	cell_number = cell_type;
@@ -172,7 +172,7 @@ void init(void)
 
 	nut_coef = 0.1;
 	nut_reversible = 0;
-	aver_nut = 0.1;
+	aver_nut = 0.001;
 
 	rep(i, cell_type) {
 		cell[i].nut_zero_coef = begin_coef.at(i).at(0);
@@ -195,6 +195,7 @@ void init(void)
 		cell[i].catalyst[0][1] = 2; //test用
 		cell[i].catalyst[1][2] = 0; //test用
 		cell[i].init_last = cell[i].mol[N - 1];
+		cell[i].go[0] = 1;
 	}
 }
 
@@ -258,12 +259,12 @@ Cell internal(Cell p)
 void evolve(void)
 {
 	// double evolve_size = 1.0 / ((double)cell_type + 1.0);
-	double evolve_size = 0.1;
+	double evolve_size = 0.05;
 	rep(i, cell_type) {
 		cell[i].size = cell[i].size * (1 - evolve_size);
 	}
 	int i = cell_type;
-	cell[i].nut_zero_coef = begin_coef.at(i).at(0) * 0.1;
+	cell[i].nut_zero_coef = begin_coef.at(0).at(0);
 	cell[i].type = i;
 	cell[i].size = evolve_size;
 	cell[i].nut = 1.0 / (double)(N + 1);
@@ -272,12 +273,13 @@ void evolve(void)
 		cell[i].nut_cat = N - 2;
 		cell[i].go[j] = (j % 3 / 2) * 0;
 		if (j != N - 1) {
-			cell[i].coef[j][j + 1] = begin_coef.at(i).at(j + 1) * 0.1;
+			cell[i].coef[j][j + 1] = begin_coef.at(i).at(j + 1);
 			cell[i].catalyst[j][j + 1] = (j - 2 + N) % N;
 			reversible[j][j + 1] = 0;
 		}
 	}
 	cell[i].init_last = cell[i].mol[N - 1];
+	cell[i].go[0] = 1;
 	cell_type++;
 }
 
@@ -286,6 +288,7 @@ double up = 1;
 void process(int t)
 {
 	box_con = decide_box_nut(t);
+	//outside_nut = box_con; //test用 outsideを一定にする(box_conからの流入を考慮しない)
 
 	//outside系をprevにいれる
 	prev_outside_nut = outside_nut;
@@ -304,20 +307,24 @@ void process(int t)
 	take_log_inside1 << endl;
 	take_log_inside2 << endl;
 	take_log_inside3 << endl;
-	//
-	// //リサイズ
-	// double sum = 0;
-	// rep(i, cell_type) sum += cell[i].size;
-	// rep(i, cell_type) {
-	// 	cell[i].size = cell[i].size / sum * box_size;
-	// 	cell[i].nut = cell[i].nut * box_size / sum;
-	// 	rep(j, N) cell[i].mol[j] = cell[i].mol[j] * box_size / sum;
-	// }
-	// take_log_up << sum << endl;
-	// up = up * sum;
+	
+	//if (t < 0) {
+	//リサイズ
+	double sum = 0;
+	rep(i, cell_type) sum += cell[i].size;
+	rep(i, cell_type) {
+		cell[i].size = cell[i].size / sum * box_size;
+		cell[i].nut = cell[i].nut * box_size / sum;
+		rep(j, N) cell[i].mol[j] = cell[i].mol[j] * box_size / sum;
+	}
+	take_log_up << sum << endl;
+	up = up * sum;
+	//}
 
 	//outsideの値を更新
-	outside_nut += time_bunkai * (box_con - prev_outside_nut) * outside_size;
+	outside_nut += time_bunkai * (box_con - prev_outside_nut) * 0.1;
+	//outside_nut = prev_outside_nut; //test用 outsideを一定にする(box_conからの流入を考慮しない)
+	take_log_boxcon << box_con << endl;
 
 	take_log_outside << outside_nut << " ";
 	rep(i, N) {
@@ -338,6 +345,8 @@ int main(void)
 		rep(t, time_end) {
 			process(t);
 			//if (t % 50000 == 0) evolve();
+			if (t == 50000) rep(i, 15) evolve();
+			// if (t == 60000) rep(i, 15) cell[i + 1].go[1] = 0;
 			cout << t << " ";
 			rep(i, cell_type) cout << fixed << setprecision(8) << cell[i].size << " ";
 			cout << endl;

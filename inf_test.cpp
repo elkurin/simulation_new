@@ -11,12 +11,12 @@
 using namespace std;
 
 namespace {
-	ofstream take_log_type("data_long_type_number10_0.001.log");
-	ofstream take_log_network("data_long_network10_0.001.log");
-	ofstream take_log_outside("data_long_outside10_0.001.log");
-	ofstream take_log_devdev("data_long_devdev10_0.001.log");
-	ofstream take_log_coef("data_long_coef10_0.001.log");
-	ofstream take_log_inside("data_long_inside10_0.001.log");
+	ofstream take_log_type("data_notinf_type_number10_0.001.log");
+	ofstream take_log_network("data_notinf_network10_0.001.log");
+	ofstream take_log_outside("data_notinf_outside10_0.001.log");
+	ofstream take_log_devdev("data_notinf_devdev10_0.001.log");
+	ofstream take_log_coef("data_notinf_coef10_0.001.log");
+	ofstream take_log_inside("data_notinf_inside10_0.001.log");
 }
 
 
@@ -44,14 +44,14 @@ double get_rand_normal(double size)
 
 const int cell_max = 100;
 int cell_type = 1;
-const int time_end = 100000;
-const double time_bunkai = 0.1;
+const int time_end = 1000000;
+const double time_bunkai = 0.01;
 const int run_time = 1;
 const int init_box_size = 1200;
 const int max_cell_size = 10;
 double box_con;
 
-const int N = 10;
+const int N = 3;
 
 int cell_number;
 double box_size;
@@ -181,12 +181,13 @@ void init(void)
 	outside_nut = 20;
 	rep(i, N) {
 		outside[i] = 0;
-		go[i] = (i % 3 / 2) * 1;
+		go[i] = (i % 3 / 2) * 0;
 		coef_decrease[i] = 0;
 	}
+	go[1] = 1;
 	nut_coef = 0.1;
 	nut_reversible = 0;
-	aver_nut = 0.01;
+	aver_nut = 0.0001;
 	// aver_nut = 1.0;
 
 
@@ -389,7 +390,7 @@ void process(int t)
 
 	//sizeが2倍以上またはmaxを越えたら分裂、半分になったら消滅
 	rep(i, cell_number) {
-		if (cell[i].size > max_cell_size || cell[i].mol[N - 1] > 2 * cell[i].init_last) {
+		if (cell[i].size > max_cell_size/*( || cell[i].mol[N - 1] > 2 * cell[i].init_last*/) {
 			devdev++;
 			if (cell[i].mol[N - 1] > 2 * cell[i].init_last) _count++;
 			else count_++;
@@ -409,8 +410,8 @@ void process(int t)
 				cell[cell_number - 1] = dev.second;
 			}
 		} else if (cell[i].mol[N] / cell[i].size < 0.5 * cell[i].init_last_con) {
-			cell[i] = cell[cell_number - 1];
-			cell_number--;
+			// cell[i] = cell[cell_number - 1];
+			// cell_number--;
 		}
 	}
 
@@ -446,7 +447,7 @@ void process(int t)
 	vector<vector<double>> keep8(cell_type);
 	// cout << cell[0].mol[7] << endl;
 	rep(i, cell_number) {
-		if (cell[i].size != 0) keep8[cell[i].type].push_back(cell[i].mol[7] / cell[i].size);
+		// if (cell[i].size != 0) keep8[cell[i].type].push_back(cell[i].mol[7] / cell[i].size);
 	}
 	rep(i, cell_type) {
 		vector<double> sum8(cell_type, 0);
@@ -462,7 +463,7 @@ void process(int t)
 int main(void)
 {
 	//randomの種を与える
-	srand(1);
+	srand(10);
 
 	//run_time回だけ走らせる
 	rep(l, run_time) {
