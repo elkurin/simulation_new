@@ -11,13 +11,12 @@
 using namespace std;
 
 namespace {
-	ofstream take_log_type("data_re_type_number.log");
-	ofstream take_log_network("data_re_network.log");
-	ofstream take_log_outside("data_re_outside.log");
-	ofstream take_log_devdev("data_re_devdev.log");
-	ofstream take_log_coef("data_re_coef.log");
-	ofstream take_log_inside("data_re_inside.log");
-	ofstream take_log_vsum("data_re_vsum.log");
+	ofstream take_log_type("data_copy_type_number10_0.001.log");
+	ofstream take_log_network("data_copy_network10_0.001.log");
+	ofstream take_log_outside("data_copy_outside10_0.001.log");
+	ofstream take_log_devdev("data_copy_devdev10_0.001.log");
+	ofstream take_log_coef("data_copy_coef10_0.001.log");
+	ofstream take_log_inside("data_copy_inside10_0.001.log");
 }
 
 
@@ -63,8 +62,6 @@ double coef_decrease[N];
 double nut_coef;
 double nut_reversible;
 double aver_nut;
-
-double v_sum;
 
 typedef struct
 {
@@ -180,6 +177,19 @@ void init(void)
 
 	cell_number = cell_type;
 	
+	//outside系はloopの外
+	outside_nut = 20;
+	rep(i, N) {
+		outside[i] = 0;
+		go[i] = (i % 3 / 2) * 1;
+		coef_decrease[i] = 0;
+	}
+	nut_coef = 0.1;
+	nut_reversible = 0;
+	aver_nut = 0.0001;
+	// aver_nut = 1.0;
+
+
 	//cellごとの詳細設定
 	rep(i, cell_type) {
 		cell[i].nut_zero_coef = begin_coef.at(i).at(0);
@@ -187,9 +197,7 @@ void init(void)
 
 		cell[i].type = i;
 		rep(j, N) {
-			// cell[i].mol[j] = get_rand_normal(0.2);
 			cell[i].mol[j] = 0.2;
-			// cell[i].inside_nut = get_rand_normal(0.2);
 			cell[i].inside_nut = 0.2;
 			// cell[i].mol[j] = 0;
 			// cell[i].inside_nut = 0;
@@ -206,26 +214,12 @@ void init(void)
 		cell[i].init_last_con = cell[i].mol[N - 1] / cell[i].size;
 	}
 
-	cell_number = cell_max - 1;
-	rep(i, cell_number) {
+	rep(i, 10 * cell_type) {
 		cell[i] = cell[0];
 	}
 
 	box_size = get_box_size();
 	// network();
-
-	nut_coef = 0.1;
-	nut_reversible = 0;
-	aver_nut = 0.0001;
-	// aver_nut = 1.0;
-
-	//outside系はloopの外
-	outside_nut = aver_nut * box_size;
-	rep(i, N) {
-		outside[i] = 0;
-		go[i] = (i % 3 / 2) * 1;
-		coef_decrease[i] = 0;
-	}
 }
 
 
@@ -254,8 +248,8 @@ Cell internal(Cell p)
 
 	//細胞内外の栄養の流出入
 	// cout << pow(p.size, - 1.0 / 3.0) << endl;
-	new_nut_con += time_bunkai * nut_coef * /*( pow(p.size, - 1.0 / 3.0) */ (prev_outside_nut_con - prev_nut_con);
-	new_outside_nut_con -= time_bunkai * nut_coef * /* pow(p.size, - 1.0 / 3.0) */ (prev_outside_nut_con - prev_nut_con) * p.size / box_size;
+	new_nut_con += time_bunkai * nut_coef * pow(p.size, - 1.0 / 3.0) * (prev_outside_nut_con - prev_nut_con);
+	new_outside_nut_con -= time_bunkai * nut_coef * pow(p.size, - 1.0 / 3.0) * (prev_outside_nut_con - prev_nut_con) * p.size / box_size;
 
 	//ただのリアクション
 	new_con[0] += time_bunkai * p.nut_zero_coef * prev_nut_con * prev_con[p.nut_cat];
@@ -321,9 +315,7 @@ void evolve(void)
 	cell[cell_number].nut_zero_coef = begin_coef.at(0).at(0);
 	cell[cell_number].type = cell_type;
 	rep(j, N) {
-		// cell[cell_number].mol[j] = get_rand_normal(0.2);
 		cell[cell_number].mol[j] = 0.2;
-		// cell[cell_number].inside_nut = get_rand_normal(0.2);
 		cell[cell_number].inside_nut = 0.2;
 		cell[cell_number].nut_cat = N - 3;
 		if (j != N - 1) {
@@ -479,9 +471,6 @@ int main(void)
 		rep(t, time_end) {
 			devdev = 0;
 			process(t);
-			v_sum = 0;
-			rep(i, cell_number) v_sum += cell[i].size;
-			take_log_vsum << v_sum / (box_size) << endl;
 			rep(i, N) {
 				double sum0 = 0;
 				double sum2 = 0;
@@ -510,14 +499,13 @@ int main(void)
 			}
 			take_log_network << endl;
 			// cout << cell[0].size << endl;
-			take_log_outside << outside_nut / box_size << " ";
 			rep(i, N) {
-				take_log_outside << outside[i] / box_size << " ";
+				take_log_outside << outside[i] << " ";
 			}
 			take_log_outside << endl;
 			take_log_devdev << devdev << endl;
 
-			if (t % 2000 == 1000) evolve();
+			if (t == 10000) rep(i, 1) evolve();
 		}
 	}
 
