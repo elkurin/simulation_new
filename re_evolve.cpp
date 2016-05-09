@@ -275,8 +275,8 @@ Cell internal(Cell p)
 
 	//細胞内外の溶質の流出入
 	rep(i, N) {
-		new_con[i] += time_bunkai * go[i] * pow(p.size, - 1.0 / 3.0) * (prev_outside_con[i] - prev_con[i]);
-		new_outside_con[i] -= time_bunkai * go[i] * pow(p.size, - 1.0 / 3.0) * (prev_outside_con[i] - prev_con[i]) * p.size / box_size;
+		new_con[i] += time_bunkai * go[i] * /*pow(p.size, - 1.0 / 3.0) */ (prev_outside_con[i] - prev_con[i]);
+		new_outside_con[i] -= time_bunkai * go[i] /* pow(p.size, - 1.0 / 3.0) */ * (prev_outside_con[i] - prev_con[i]) * p.size / box_size;
 	}
 
 	//濃度から数に戻して挿入
