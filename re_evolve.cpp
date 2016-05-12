@@ -194,7 +194,7 @@ void init(void)
 			// cell[i].mol[j] = 0;
 			// cell[i].inside_nut = 0;
 
-			cell[i].nut_cat = N - 3;
+			cell[i].nut_cat = N - 2;
 			if (j != N - 1) {
 				cell[i].coef[j][j + 1] = begin_coef.at(i).at(j + 1);
 				cell[i].catalyst[j][j + 1] = (j - 2 + N) % N;

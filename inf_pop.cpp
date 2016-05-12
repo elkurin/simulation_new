@@ -52,7 +52,7 @@ double get_rand_normal(double size)
 const int cell_max = 1000;
 int cell_type = 1;
 const int time_end = 2000000;
-const double time_bunkai = 1.0;
+const double time_bunkai = 0.1;
 const int run_time = 1;
 
 const double box_size = 1.0;
@@ -193,8 +193,8 @@ void init(void)
 				reversible[j][j + 1] = 0;
 			}
 		}
-		cell[i].catalyst[0][1] = 2; //test用
-		cell[i].catalyst[1][2] = 0; //test用
+		// cell[i].catalyst[0][1] = 2; //test用
+		// cell[i].catalyst[1][2] = 0; //test用
 		cell[i].init_last = cell[i].mol[N - 1];
 		// cell[i].go[0] = 1;
 	}
@@ -323,7 +323,7 @@ void process(int t)
 	//}
 
 	//outsideの値を更新
-	outside_nut += time_bunkai * (box_con - prev_outside_nut) * 0.1;
+	outside_nut += time_bunkai * (box_con - prev_outside_nut);
 	//outside_nut = prev_outside_nut; //test用 outsideを一定にする(box_conからの流入を考慮しない)
 	take_log_boxcon << box_con << endl;
 
@@ -350,7 +350,7 @@ int main(void)
 			process(t);
 			// if (t % 50000 == 30000) evolve();
 			// if (t == 50000) rep(i, 1) evolve();
-			if (t == 1000) rep(i, 1) evolve();
+			if (t % 2000 == 1000) rep(i, 1) evolve();
 			// if (t == 60000) rep(i, 15) cell[i + 1].go[1] = 0;
 			cout << t << " ";
 			rep(i, cell_type) cout << fixed << setprecision(8) << cell[i].size << " ";
