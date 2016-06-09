@@ -45,7 +45,7 @@ double get_rand_normal(double size)
 
 const int cell_max = 100;
 int cell_type = 1;
-const int time_end = 100000;
+const int time_end = 1000000;
 const double time_bunkai = 0.1;
 const int run_time = 1;
 const int init_box_size = 1200;
@@ -83,6 +83,7 @@ typedef struct
 	double size;
 	double init_last;
 	double init_last_con;
+	double init_size;
 } Cell;
 
 Cell cell[cell_max];
@@ -202,6 +203,7 @@ void init(void)
 			}
 		}
 		cell[i].size = get_size(cell[i]);
+		cell[i].init_size = cell[i].size;
 		cell[i].init_last = cell[i].mol[N - 1];
 		cell[i].init_last_con = cell[i].mol[N - 1] / cell[i].size;
 	}
@@ -216,14 +218,14 @@ void init(void)
 
 	nut_coef = 0.1;
 	nut_reversible = 0;
-	aver_nut = 0.0001;
+	aver_nut = 0.01;
 	// aver_nut = 1.0;
 
 	//outside系はloopの外
 	outside_nut = aver_nut * box_size;
 	rep(i, N) {
 		outside[i] = 0;
-		go[i] = (i % 3 / 2) * 1;
+		go[i] = (i % 3 / 2) * 0.2;
 		coef_decrease[i] = 0;
 	}
 }
@@ -262,7 +264,7 @@ Cell internal(Cell p)
 	new_nut_con -= time_bunkai * p.nut_zero_coef * prev_nut_con * prev_con[p.nut_cat];
 	rep(i, N - 1) {
 		new_con[i + 1] += time_bunkai * p.coef[i][i + 1] * prev_con[i] * prev_con[p.catalyst[i][i + 1]];
-		prev_con[i] -= time_bunkai * p.coef[i][i + 1] * prev_con[i] * prev_con[p.catalyst[i][i + 1]];
+		new_con[i] -= time_bunkai * p.coef[i][i + 1] * prev_con[i] * prev_con[p.catalyst[i][i + 1]];
 	}
 	
 	//可逆反応
@@ -318,7 +320,7 @@ void evolve(void)
 		cell[get] = cell[cell_number];
 	}
 
-	cell[cell_number].nut_zero_coef = begin_coef.at(0).at(0);
+	cell[cell_number].nut_zero_coef = begin_coef.at(cell_type).at(0);
 	cell[cell_number].type = cell_type;
 	rep(j, N) {
 		// cell[cell_number].mol[j] = get_rand_normal(0.2);
@@ -333,6 +335,7 @@ void evolve(void)
 		}
 	}
 	cell[cell_number].size = get_size(cell[cell_number]);
+	cell[cell_number].init_size = cell[cell_number].size;
 	cell[cell_number].init_last = cell[cell_number].mol[N - 1];
 	cell[cell_number].init_last_con = cell[cell_number].mol[N - 1] / cell[cell_number].size;
 
@@ -347,7 +350,6 @@ pair<Cell, Cell> devide(Cell p)
 	q = p;
 	r = p;
 	
-	//pが分裂するとき中身は6:4に分裂
 	while(1) {
 		// cout << "dev while" << endl;
 		q.inside_nut = get_rand_normal(0.5) * p.inside_nut;
@@ -397,7 +399,8 @@ void process(int t)
 
 	//sizeが2倍以上またはmaxを越えたら分裂、半分になったら消滅
 	rep(i, cell_number) {
-		if (/* cell[i].size > max_cell_size ||*/ cell[i].mol[N - 1] > 2 * cell[i].init_last) {
+		// if (cell[i].size > max_cell_size /* || cell[i].mol[N - 1] > 2 * cell[i].init_last*/) {
+		if (cell[i].size > 2 * cell[i].init_size) {
 			devdev++;
 			if (cell[i].mol[N - 1] > 2 * cell[i].init_last) _count++;
 			else count_++;
@@ -416,7 +419,8 @@ void process(int t)
 			} else {
 				cell[cell_number - 1] = dev.second;
 			}
-		} else if (cell[i].mol[N] / cell[i].size < 0.5 * cell[i].init_last_con) {
+		// } else if (cell[i].mol[N] / cell[i].size < 0.5 * cell[i].init_last_con) {
+		} else if (cell[i].size < 0.5 * cell[i].init_size) {
 			cell[i] = cell[cell_number - 1];
 			cell_number--;
 		}
@@ -517,7 +521,8 @@ int main(void)
 			take_log_outside << endl;
 			take_log_devdev << devdev << endl;
 
-			if (t % 2000 == 1000) evolve();
+			if (t % 20000 == 1000) evolve();
+			// if (t == 10000) evolve();
 		}
 	}
 

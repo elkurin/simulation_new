@@ -11,21 +11,21 @@
 using namespace std;
 
 namespace {
-	ofstream take_log_type("data_inf0_type_number0_0.01.log");
-	ofstream take_log_network("data_inf0_network0_0.01.log");
-	ofstream take_log_outside("data_inf0_outside0_0.01.log");
-	ofstream take_log_devdev("data_inf0_devdev0_0.01.log");
-	ofstream take_log_coef("data_inf0_coef0_0.01.log");
-	ofstream take_log_inside("data_inf0_inside0_0.01.log");
-	ofstream take_log_inside1("data_inf0_inside1_0.01.log");
-	ofstream take_log_inside2("data_inf0_inside2_0.01.log");
-	ofstream take_log_inside3("data_inf0_inside3_0.01.log");
-	ofstream take_log_come("data_inf0_come.log");
-	ofstream take_log_up("data_inf0_up.log");
-	ofstream take_log_sum("data_inf0_sum.log");
-	ofstream take_log_boxcon("data_inf0_boxcon.log");
-	ofstream take_log_grow("data_inf0_grow.log");
-	ofstream take_log_prev("data_inf0_prev.log");
+	ofstream take_log_type("data_equ1_type_number0_0.01.log");
+	// ofstream take_log_network("data_equ1_network0_0.01.log");
+	// ofstream take_log_outside("data_equ1_outside0_0.01.log");
+	// ofstream take_log_devdev("data_equ1_devdev0_0.01.log");
+	// ofstream take_log_coef("data_equ1_coef0_0.01.log");
+	// ofstream take_log_inside("data_equ1_inside0_0.01.log");
+	// ofstream take_log_inside1("data_equ1_inside1_0.01.log");
+	// ofstream take_log_inside2("data_equ1_inside2_0.01.log");
+	// ofstream take_log_inside3("data_equ1_inside3_0.01.log");
+	// ofstream take_log_come("data_equ1_come.log");
+	// ofstream take_log_up("data_equ1_up.log");
+	// ofstream take_log_sum("data_equ1_sum.log");
+	// ofstream take_log_boxcon("data_equ1_boxcon.log");
+	// ofstream take_log_grow("data_equ1_grow.log");
+	ofstream take_log_pop("data_equ1_pop");
 }
 
 
@@ -53,9 +53,9 @@ double get_rand_normal(double size)
 
 const int cell_max = 1000;
 int cell_type = 1;
-const int time_end = 200000;
+const int time_end = 1000000;
 // const int time_end = 200;
-const double time_bunkai = 0.0001;
+const double time_bunkai = 0.01;
 const int run_time = 1;
 
 const double box_size = 1.0;
@@ -165,8 +165,8 @@ void init(void)
 	all_init();
 	// one_init(0);
 	// zero_init(0);
-	// rep(i, 50) sum_init(i + 1, 1);
-	rep(i, 50) desig_init(i + 1);
+	rep(i, 50) sum_init(i + 1, 1);
+	// rep(i, 50) desig_init(i + 1);
 
 	cell_number = cell_type;
 
@@ -213,6 +213,10 @@ void init(void)
 double prev_outside_nut;
 double prev_outside[N];
 
+double mmm = 0;
+
+double resize = 0;
+
 Cell internal(Cell p, int t)
 {
 	//前の値を保存
@@ -220,10 +224,12 @@ Cell internal(Cell p, int t)
 	rep(i, N) prev[i] = p.mol[i];
 
 	double prev_nut = p.nut;
+	double growth = 0;
 
 	//細胞内外の栄養の流出入
 	p.nut += time_bunkai * nut_coef/* * pow(p.size, - 1.0 / 3.0)*/ * (prev_outside_nut - prev_nut);
 	outside_nut -= time_bunkai * nut_coef/* * pow(p.size, - 1.0 / 3.0)*/ * (prev_outside_nut - prev_nut) * p.size / outside_size;
+	growth += time_bunkai * nut_coef * (prev_outside_nut - prev_nut);
 
 	//リアクション
 	p.mol[0] += time_bunkai * p.nut_zero_coef * prev_nut * prev[p.nut_cat];
@@ -232,6 +238,8 @@ Cell internal(Cell p, int t)
 	rep(i, N - 1) {
 		p.mol[i + 1] += time_bunkai * p.coef[i][i + 1] * prev[i] * prev[p.catalyst[i][i + 1]];
 		p.mol[i] -= time_bunkai * p.coef[i][i + 1] * prev[i] * prev[p.catalyst[i][i + 1]];
+		mmm += time_bunkai * p.coef[i][i + 1] * prev[i] * prev[p.catalyst[i][i + 1]];
+		// cout << p.coef[i][i + 1] << " " << prev[i] << " " << prev[p.catalyst[i][i + 1]] << endl;
 	}
 
 	//可逆反応
@@ -246,42 +254,42 @@ Cell internal(Cell p, int t)
 	rep(i, N) {
 		p.mol[i] += time_bunkai * p.go[i]/* * pow(p.size, - 1.0 / 3.0)*/ * (prev_outside[i] - prev[i]);
 		outside[i] -= time_bunkai * p.go[i]/* * pow(p.size, - 1.0 / 3.0)*/ * (prev_outside[i] - prev[i]) * p.size / outside_size;
+		growth += time_bunkai * p.go[i] * (prev_outside[i] - prev[i]);
 	}
 
 	//リサイズ
 	double sum = p.nut;
 	rep(i, N) sum += p.mol[i];
-	//test
-	// sum = 1.00007;
-	//testend
-	p.size = sum * p.size;
-	p.nut = p.nut / sum;
-	rep(i, N) p.mol[i] = p.mol[i] / sum;
-	take_log_sum << fixed << setprecision(8) << (sum - 1) / time_bunkai << endl;
+	// //test
+	// // sum = 1.00007;
+	// //testend
+	// p.size = sum * p.size;
+	// p.nut = p.nut / sum;
+	// rep(i, N) p.mol[i] = p.mol[i] / sum;
+	// take_log_sum << fixed << setprecision(8) << (sum - 1) / time_bunkai << endl;
+
+	//growth調節
+	p.size += growth * p.size;
+	resize += growth * p.size;
+	rep(i, N) p.mol[i] -= prev[i] * growth;
+	p.nut -= prev_nut * growth;
 
 	//test用 take_log_grow
-	take_log_grow << p.nut - prev_nut << " ";
-	double grow = p.nut - prev_nut;
-	rep(i, N) {
-		take_log_grow << p.mol[i] - prev[i] << " ";
-		grow += p.mol[i] - prev[i];
-	}
-	take_log_grow << grow << endl;
-
-	double take_prev = nut_coef * (prev_outside_nut - prev_nut);
-	// if (t % 100 == 0) { //take_log_inside << endl; の解除も忘れない
-	take_log_inside << p.nut << " ";
-	// rep(i, N) take_log_inside << p.mol[i] << " "; // test用 nodeが一つしかない時
-	take_log_prev << nut_coef * (prev_outside_nut - prev_nut) << " "; //test prev
-	rep(i, N) {
-		take_log_prev << prev_outside[i] - prev[i] << " "; //test prev
-		take_prev += prev_outside[i] - prev[i];
-	}
+	// take_log_grow << p.nut - prev_nut << " ";
+	// double grow = p.nut - prev_nut;
+	// rep(i, N) {
+	// 	take_log_grow << p.mol[i] - prev[i] << " ";
+	// 	grow += p.mol[i] - prev[i];
 	// }
-	take_log_prev << take_prev << endl; //test prev
-	take_log_inside1 << p.mol[1] << " ";
-	take_log_inside2 << p.mol[2] << " ";
-	take_log_inside3 << p.mol[3] << " ";
+	// take_log_grow << grow << endl;
+
+	// if (t % 100 == 0) { //take_log_inside << endl; の解除も忘れない
+	// take_log_inside << p.nut << " ";
+	// rep(i, N) take_log_inside << p.mol[i] << " "; // test用 nodeが一つしかない時
+	// }
+	// take_log_inside1 << p.mol[1] << " ";
+	// take_log_inside2 << p.mol[2] << " ";
+	// take_log_inside3 << p.mol[3] << " ";
 
 	return p;
 }
@@ -294,7 +302,7 @@ void evolve(void)
 		cell[i].size = cell[i].size * (1 - evolve_size);
 	}
 	int i = cell_type;
-	cell[i].nut_zero_coef = begin_coef.at(0).at(0);
+	cell[i].nut_zero_coef = begin_coef.at(i).at(0);
 	cell[i].type = i;
 	cell[i].size = evolve_size;
 	cell[i].nut = 1.0 / (double)(N + 1);
@@ -315,14 +323,19 @@ void evolve(void)
 
 double up = 1;
 
+double prev_size[100];
+
 void process(int t)
 {
+	resize = 0;
+
 	box_con = decide_box_nut(t);
 	//outside_nut = box_con; //test用 outsideを一定にする(box_conからの流入を考慮しない)
 
 	//outside系をprevにいれる
 	prev_outside_nut = outside_nut;
 	rep(i, N) prev_outside[i] = outside[i];
+	rep(i, cell_type) prev_size[i] = cell[i].size;
 
 	//loop回してreaction
 	rep(i, cell_type) {
@@ -335,44 +348,46 @@ void process(int t)
 	}
 	
 	// if (t % 100 == 0) take_log_inside << endl;
-	if (1) take_log_inside << endl;
-	take_log_inside1 << endl;
-	take_log_inside2 << endl;
-	take_log_inside3 << endl;
+	// if (1) take_log_inside << endl;
+	// take_log_inside1 << endl;
+	// take_log_inside2 << endl;
+	// take_log_inside3 << endl;
 	
 	//if (t < 0) {
 	//リサイズ
-	double sum = 0;
-	rep(i, cell_type) sum += cell[i].size;
-	rep(i, cell_type) {
-		cell[i].size = cell[i].size / sum * box_size;
-		cell[i].nut = cell[i].nut / sum * box_size;
-		rep(j, N) cell[i].mol[j] = cell[i].mol[j] / sum * box_size;
-	}
-	take_log_up << sum << endl;
-	up = up * sum;
-	take_log_up << up << endl;
+	// double sum = 0;
+	// rep(i, cell_type) sum += cell[i].size;
+	// rep(i, cell_type) {
+	// 	cell[i].size = cell[i].size / sum * box_size;
+	// 	cell[i].nut = cell[i].nut / sum * box_size;
+	// 	rep(j, N) cell[i].mol[j] = cell[i].mol[j] / sum * box_size;
+	// }
+	// take_log_up << sum << endl;
+	// up = up * sum;
+	// take_log_up << up << endl;
 	//}
+
+	rep(i, cell_type) cell[i].size -= cell[i].size * resize;
 
 	//outsideの値を更新
 	outside_nut += time_bunkai * (box_con - prev_outside_nut);
 	//outside_nut = prev_outside_nut; //test用 outsideを一定にする(box_conからの流入を考慮しない)
-	take_log_boxcon << box_con << endl;
+	// take_log_boxcon << box_con << endl;
 
 	if (t % 100 == 0) {
 	// if (1) {
-		take_log_outside << outside_nut << " ";
+		// take_log_outside << outside_nut << " ";
 		rep(i, N) {
-			take_log_outside << outside[i] << " ";
+			// take_log_outside << outside[i] << " ";
 		}
-		take_log_outside << endl;
+		// take_log_outside << endl;
 	}
 }
 
 int main(void)
 {
 	//randomの種を与える
-	srand(10);
+	srand(2);
 
 	//tun_time回走らせる
 	rep(l, run_time) {
@@ -382,17 +397,18 @@ int main(void)
 			process(t);
 			// if (t % 50000 == 30000) evolve();
 			// if (t == 10000) rep(i, 1) evolve();
-			if (t % 2000 == 1000) rep(i, 1) evolve();
+			if (t % 2000 == 1000 && cell_type < 50) rep(i, 1) evolve();
 			// if (t == 60000) rep(i, 15) cell[i + 1].go[1] = 0;
 			cout << t << " ";
 			rep(i, cell_type) cout << fixed << setprecision(8) << cell[i].size << " ";
 			cout << endl;
 			if (t % 100 == 0) {
-				rep(i, cell_type) take_log_type << cell[i].size << " ";
-				take_log_type << endl;
+				// rep(i, cell_type) take_log_type << cell[i].size << " ";
+				// take_log_type << endl;
 			}
 		}
 	}
+	// cout << "mmm" << mmm << endl;
 	
 	rep(i, cell_type) {
 		rep(j, N) {
@@ -413,7 +429,21 @@ int main(void)
 		cout << endl;
 	}
 
+	double max_pop = 0;
+	int count_pop = 0;
+	rep(i, cell_type) {
+		if (i == 0) cout << cell[i].size << " ";
+		else {
+			if (max_pop < cell[i].size) max_pop = cell[i].size;
+			if (cell[i].size > 0.05) count_pop++;
+			else if (cell[i].size > 0.01 && prev_size[i] < cell[i].size) count_pop++;
+		}
+	}
+	cout << max_pop << " " << count_pop << endl;
+	// take_log_pop << aver_nut << " " << cell[0].size << " " << max_pop << " " << count_pop << endl;
+
 	cout << up << endl;
 
 	return 0;
 }
+
