@@ -11,23 +11,29 @@
 using namespace std;
 
 namespace {
-	ofstream take_log_type("data_equ0_type_number0_0.01.log");
-	// ofstream take_log_network("data_equ1_network0_0.01.log");
-	ofstream take_log_outside("data_equ0_outside0_0.01.log");
-	// ofstream take_log_devdev("data_equ1_devdev0_0.01.log");
-	ofstream take_log_coef("data_equ0_coef0_0.01.log");
-	ofstream take_log_inside("data_equ0_inside0_0.01.log");
-	// ofstream take_log_inside1("data_equ1_inside1_0.01.log");
-	// ofstream take_log_inside2("data_equ1_inside2_0.01.log");
-	// ofstream take_log_inside3("data_equ1_inside3_0.01.log");
-	// ofstream take_log_come("data_equ1_come.log");
-	// ofstream take_log_up("data_equ1_up.log");
-	// ofstream take_log_sum("data_equ1_sum.log");
-	// ofstream take_log_boxcon("data_equ1_boxcon.log");
-	// ofstream take_log_grow("data_equ1_grow.log");
-	ofstream take_log_pop("data_equ0_pop.log");
-	ofstream take_log_pop_coef("data_equ0_pop_coef.log");
-	ofstream take_log_oya_coef("data_equ0_oya_coef.log");
+	ofstream take_log_type("data_desig9_type_number0_0.01.log");
+	// ofstream take_log_network("data_desig9_network0_0.01.log");
+	ofstream take_log_outside("data_desig9_outside0_0.01.log");
+	// ofstream take_log_devdev("data_desig9_devdev0_0.01.log");
+	ofstream take_log_coef("data_desig9_coef0_0.01.log");
+	ofstream take_log_inside("data_desig9_inside0_0.01.log");
+	ofstream take_log_inside1("data_desig9_inside1_0.01.log");
+	ofstream take_log_inside2("data_desig9_inside2_0.01.log");
+	ofstream take_log_inside3("data_desig9_inside3_0.01.log");
+	ofstream take_log_inside4("data_desig9_inside4_0.01.log");
+	ofstream take_log_inside5("data_desig9_inside5_0.01.log");
+	ofstream take_log_inside6("data_desig9_inside6_0.01.log");
+	ofstream take_log_inside7("data_desig9_inside7_0.01.log");
+	ofstream take_log_inside8("data_desig9_inside8_0.01.log");
+	ofstream take_log_inside9("data_desig9_inside9_0.01.log");
+	ofstream take_log_inside10("data_desig9_inside10_0.01.log");
+	ofstream take_log_growth("data_desig9_growth_0.001.log");
+	// ofstream take_log_come("data_desig9_come.log");
+	// ofstream take_log_up("data_desig9_up.log");
+	// ofstream take_log_sum("data_desig9_sum.log");
+	// ofstream take_log_boxcon("data_desig9_boxcon.log");
+	// ofstream take_log_grow("data_desig9_grow.log");
+	// ofstream take_log_pop("data_desig9_pop.log");
 }
 
 
@@ -56,9 +62,10 @@ double get_rand_normal(double size)
 const int cell_max = 1000;
 int cell_type;
 const int init_cell_type = 1;
-// const int time_end = 2000000;
-const int time_end = 200;
-const double time_bunkai = 0.05;
+// const int time_end = 5000000;
+const int time_end = 5000000;
+// const int time_end = 200;
+const double time_bunkai = 0.001;
 const int run_time = 1;
 
 const double box_size = 1.0;
@@ -101,7 +108,9 @@ Cell def;
 
 double outside_nut;
 double outside[N];
-double prev_size[cell_max];
+
+double prev_size[1000];
+
 
 double decide_box_nut(int time)
 {
@@ -158,6 +167,13 @@ void one_init(int i)
 	}
 }
 
+void ten_init(int i)
+{
+	rep(j, N) {
+		begin_coef.at(i).at(j) = 10;
+	}
+}
+
 double init_go[N];
 
 void init(void)
@@ -171,23 +187,29 @@ void init(void)
 
 	//coefの決め方
 	// all_init();
-	sum_init(0, 10);
+	// sum_init(0, 10);
 	// one_init(0);
+	ten_init(0);
+	// one_init(1);
 	// zero_init(0);
-	rep(i, 50) sum_init(i + 1, 1);
+	// rep(i, 50) sum_init(i + 1, 1);
 	// rep(i, 50) desig_init(i + 1);
-	rep(i, 50) {
-		rep(j, N) take_log_coef << begin_coef.at(i).at(j) << " ";
-		take_log_coef << endl;
-	}
+	// desig_init(0);
+	// desig_init(1);
+	// rep(i, 50) {
+	// 	rep(j, N) take_log_coef << begin_coef.at(i).at(j) << " ";
+	// 	take_log_coef << endl;
+	// }
 
 	cell_type = init_cell_type;
+	// cell_type = 0;
 	cell_number = cell_type;
 
 	nut_coef = 1;
+	// nut_coef = 0.001;
 	nut_reversible = 0;
-	// aver_nut = 0.01;
-	// aver_nut = 1.0;
+	// aver_nut = 0.0001;
+	aver_nut = 0.1;
 
 	//outside系はloopの外
 	outside_nut = aver_nut;
@@ -206,12 +228,14 @@ void init(void)
 			cell[i].mol[j] = 1.0 / (double)(N + 1);
 			// cell[i].mol[j] = 0.25; //test用
 			cell[i].nut_cat = N - 3;
+			// cell[i].nut_cat = N - 2;
 			// cell[i].nut_cat = 1; //test用
-			cell[i].go[j] = (j % 3 / 2) * 1;
+			cell[i].go[j] = (j % 3 / 2) * 0;
 			// cell[i].go[j] = init_go[j];
 			if (j != N - 1) {
 				cell[i].coef[j][j + 1] = begin_coef.at(i).at(j + 1);
-				cell[i].catalyst[j][j + 1] = (j - 1 + N) % N;
+				cell[i].catalyst[j][j + 1] = (j - 2 + N) % N;
+				// cell[i].catalyst[j][j + 1] = (j - 1 + N) % N;
 				reversible[j][j + 1] = 0;
 			}
 		}
@@ -223,6 +247,17 @@ void init(void)
 		// cell[i].mol[0] = 0; //test
 		// cell[i].mol[1] = 0.5;   //test
 		// cell[i].mol[2] = 0;
+
+		// cell[i].nut_cat = 9;
+		// cell[i].catalyst[0][1] = 2;
+		// cell[i].catalyst[1][2] = 4;
+		// cell[i].catalyst[2][3] = 6;
+		// cell[i].catalyst[3][4] = 8;
+		// cell[i].catalyst[4][5] = 0;
+		// cell[i].catalyst[5][6] = 7;
+		// cell[i].catalyst[6][7] = 5;
+		// cell[i].catalyst[7][8] = 3;
+		// cell[i].catalyst[8][9] = 1;
 	}
 }
 
@@ -285,10 +320,16 @@ Cell internal(Cell p, int t, int num)
 	// take_log_sum << fixed << setprecision(8) << (sum - 1) / time_bunkai << endl;
 
 	//growth調節
-	p.size += growth * prev_size[num];
+	// //test
+	// if (num == 0) growth = 0.001;
+	// if (num == 1) growth = 0.0001;
+	// //test end
 	resize += growth * prev_size[num];
+	p.size += growth * prev_size[num];
 	rep(i, N) p.mol[i] -= prev[i] * growth;
 	p.nut -= prev_nut * growth;
+
+	// if (t % 10 == 0) take_log_growth << growth / time_bunkai << " ";
 
 	//test用 take_log_grow
 	// take_log_grow << p.nut - prev_nut << " ";
@@ -300,12 +341,19 @@ Cell internal(Cell p, int t, int num)
 	// take_log_grow << grow << endl;
 
 	if (t % 1000 == 0) { //take_log_inside << endl; の解除も忘れない
-	take_log_inside << p.nut << " ";
+		take_log_inside << p.nut << " ";
 	// rep(i, N) take_log_inside << p.mol[i] << " "; // test用 nodeが一つしかない時
 	// }
-		// take_log_inside1 << p.mol[1] << " ";
-		// take_log_inside2 << p.mol[2] << " ";
-		// take_log_inside3 << p.mol[3] << " ";
+		take_log_inside1 << p.mol[0] << " ";
+		take_log_inside2 << p.mol[1] << " ";
+		take_log_inside3 << p.mol[2] << " ";
+		take_log_inside4 << p.mol[3] << " ";
+		take_log_inside5 << p.mol[4] << " ";
+		take_log_inside6 << p.mol[5] << " ";
+		take_log_inside7 << p.mol[6] << " ";
+		take_log_inside8 << p.mol[7] << " ";
+		take_log_inside9 << p.mol[8] << " ";
+		take_log_inside10 << p.mol[9] << " ";
 	}
 
 	return p;
@@ -315,9 +363,11 @@ void evolve(void)
 {
 	// double evolve_size = 1.0 / ((double)cell_type + 1.0);
 	double evolve_size = 0.01;
-	rep(i, cell_type) {
-		cell[i].size = cell[i].size * (1 - evolve_size);
-	}
+	// double evolve_size = 0.5;
+	// rep(i, cell_type) {
+	// 	cell[i].size = cell[i].size * (1 - evolve_size);
+	// }
+	cell[0].size -= evolve_size; // 同時投入用
 	int i = cell_type;
 	cell[i].nut_zero_coef = begin_coef.at(i).at(0);
 	cell[i].type = i;
@@ -356,20 +406,28 @@ void process(int t)
 	//loop回してreaction
 	rep(i, cell_type) {
 		if (cell[i].size < 10e-8) {
-			cell[i].size = 0;
-			double sum = 0;
-			rep(j, cell_type) sum += prev_size[j];
-			rep(j, cell_type) cell[j].size = prev_size[j] * box_size / sum;
+			// cell[i].size = 0;
+			// double sum = 0;
+			// rep(j, cell_type) sum += cell[j].size;
+			// rep(j, cell_type) cell[j].size = cell[j].size * box_size / sum;
 		} else cell[i] = internal(cell[i], t, i);
 	}
 	
 	if (t % 1000 == 0) {
 		take_log_inside << endl;
 	// if (1) take_log_inside << endl;
-		// take_log_inside1 << endl;
-		// take_log_inside2 << endl;
-		// take_log_inside3 << endl;
+		take_log_inside1 << endl;
+		take_log_inside2 << endl;
+		take_log_inside3 << endl;
+		take_log_inside4 << endl;
+		take_log_inside5 << endl;
+		take_log_inside6 << endl;
+		take_log_inside7 << endl;
+		take_log_inside8 << endl;
+		take_log_inside9 << endl;
+		take_log_inside10 << endl;
 	}
+	// if (t % 10 == 0) take_log_growth << endl;
 	
 	//if (t < 0) {
 	//リサイズ
@@ -385,6 +443,7 @@ void process(int t)
 	// take_log_up << up << endl;
 	//}
 
+	//リサイズの微分方程式`
 	rep(i, cell_type) cell[i].size -= prev_size[i] * resize;
 
 	//outsideの値を更新
@@ -402,27 +461,28 @@ void process(int t)
 	}
 }
 
-// int main(void)
-void main_(int get_rand)
+int main(void)
+// void main_(int get_rand)
 {
 	//randomの種を与える
-	srand(get_rand);
-	// srand(1);
+	// srand(get_rand);
+	srand(5);
 
 	//tun_time回走らせる
 	rep(l, run_time) {
 		init();
-		//time_end秒走らせる
+		//time_end_秒走らせる
 		rep(t, time_end) {
+			// if (t == 0) rep(i, 1) evolve();
 			process(t);
 			// if (t % 50000 == 30000) evolve();
-			if (t == 10000) rep(i, 50) evolve();
+			// if (t == 100000) rep(i, 50) evolve();
 			// if (t % 2000 == 1000 && cell_type < 50) rep(i, 1) evolve();
 			// if (t == 60000) rep(i, 15) cell[i + 1].go[1] = 0;
 			cout << t << " ";
 			rep(i, cell_type) cout << fixed << setprecision(8) << cell[i].size << " ";
 			cout << endl;
-			if (t % 100 == 0) {
+			if (t % 1000 == 0) {
 				rep(i, cell_type) take_log_type << cell[i].size << " ";
 				take_log_type << endl;
 			}
@@ -434,6 +494,8 @@ void main_(int get_rand)
 		rep(j, N) {
 			cout << begin_coef.at(i).at(j) << " ";
 		}
+		cout << endl;
+		rep(j, N) cout << cell[i].go[j] << " ";
 		cout << endl;
 	}
 
@@ -450,43 +512,34 @@ void main_(int get_rand)
 	}
 
 	double max_pop = 0;
-	int max_pop_num = 0;
 	int count_pop = 0;
 	rep(i, cell_type) {
 		if (i == 0) cout << cell[i].size << " ";
 		else {
-			if (max_pop < cell[i].size) {
-				max_pop = cell[i].size;
-				max_pop_num = i;
-			}
+			if (max_pop < cell[i].size) max_pop = cell[i].size;
 			if (cell[i].size > 0.05) count_pop++;
 			else if (cell[i].size > 0.01 && prev_size[i] < cell[i].size) count_pop++;
 		}
 	}
 	cout << max_pop << " " << count_pop << endl;
-	take_log_pop << aver_nut << " " << cell[0].size << " " << max_pop << " " << count_pop << endl;
-	rep (i, N) take_log_pop_coef << begin_coef.at(max_pop_num).at(i) << " ";
-	take_log_pop_coef << endl;
-	rep (i, N) take_log_oya_coef << begin_coef.at(0).at(i) << " ";
-	take_log_oya_coef << endl;
+	// take_log_pop << aver_nut << " " << cell[0].size << " " << max_pop << " " << count_pop << endl;
 
 	cout << up << endl;
+	cout << "cell_type" << cell_type << endl;
 
 	// return 0;
 }
+/*
 int main(void)
 {
-	// double give_nut[15] = {0.00001, 0.00005, 0.00007, 0.0001, 0.0003, 0.0005, 0.0007, 0.001, 0.003, 0.005, 0.007, 0.01, 0.05, 0.1};
-	// double give_nut[13] = {0.004, 0.009, 0.015, 0.025, 0.035, 0.045, 0.055, 0.065, 0.07, 0.075, 0.09, 0.11, 0.15};
+	// double give_nut[10] = {0.0001, 0.0005, 0.0007, 0.001, 0.003, 0.005, 0.01, 0.05, 0.1};
+	double give_nut[14] = {0.0001, 0.0002, 0.0004, 0.0006, 0.0008, 0.001, 0.0015, 0.002, 0.003, 0.005, 0.007, 0.01, 0.015, 0.02};
 	
-	rep(i, 1) {
-		// aver_nut = give_nut[i];
+	rep(i, 14) {
+		aver_nut = give_nut[i];
 		// rep(j, N) init_go[j] = 0;
 		// init_go[i] = 1;
-		rep(j, 1) {
-			aver_nut = 0.1;
-			main_(i + 1);
-		}
+		rep(j, 5) main_(j + 1);
 	}
 	return 0;
-}
+}*/

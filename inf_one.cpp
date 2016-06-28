@@ -11,12 +11,12 @@
 using namespace std;
 
 namespace {
-	ofstream take_log_type("data_equ0_type_number0_0.01.log");
+	// ofstream take_log_type("data_equ1_type_number0_0.01.log");
 	// ofstream take_log_network("data_equ1_network0_0.01.log");
-	ofstream take_log_outside("data_equ0_outside0_0.01.log");
+	// ofstream take_log_outside("data_equ1_outside0_0.01.log");
 	// ofstream take_log_devdev("data_equ1_devdev0_0.01.log");
-	ofstream take_log_coef("data_equ0_coef0_0.01.log");
-	ofstream take_log_inside("data_equ0_inside0_0.01.log");
+	// ofstream take_log_coef("data_equ1_coef0_0.01.log");
+	// ofstream take_log_inside("data_equ1_inside0_0.01.log");
 	// ofstream take_log_inside1("data_equ1_inside1_0.01.log");
 	// ofstream take_log_inside2("data_equ1_inside2_0.01.log");
 	// ofstream take_log_inside3("data_equ1_inside3_0.01.log");
@@ -25,9 +25,8 @@ namespace {
 	// ofstream take_log_sum("data_equ1_sum.log");
 	// ofstream take_log_boxcon("data_equ1_boxcon.log");
 	// ofstream take_log_grow("data_equ1_grow.log");
-	ofstream take_log_pop("data_equ0_pop.log");
-	ofstream take_log_pop_coef("data_equ0_pop_coef.log");
-	ofstream take_log_oya_coef("data_equ0_oya_coef.log");
+	ofstream take_log_pop("data_one1_pop.log");
+	ofstream take_log_growth("data_onedesig1_growth");
 }
 
 
@@ -56,8 +55,8 @@ double get_rand_normal(double size)
 const int cell_max = 1000;
 int cell_type;
 const int init_cell_type = 1;
-// const int time_end = 2000000;
-const int time_end = 200;
+const int time_end = 100000;
+// const int time_end = 200;
 const double time_bunkai = 0.05;
 const int run_time = 1;
 
@@ -158,6 +157,13 @@ void one_init(int i)
 	}
 }
 
+void same_init(int i, double k)
+{
+	rep(j, N) {
+		begin_coef.at(i).at(j) = k;
+	}
+}
+
 double init_go[N];
 
 void init(void)
@@ -171,14 +177,14 @@ void init(void)
 
 	//coefの決め方
 	// all_init();
-	sum_init(0, 10);
+	// sum_init(0, 10);
 	// one_init(0);
 	// zero_init(0);
-	rep(i, 50) sum_init(i + 1, 1);
+	// rep(i, 50) sum_init(i + 1, 1);
 	// rep(i, 50) desig_init(i + 1);
 	rep(i, 50) {
-		rep(j, N) take_log_coef << begin_coef.at(i).at(j) << " ";
-		take_log_coef << endl;
+		// rep(j, N) take_log_coef << begin_coef.at(i).at(j) << " ";
+		// take_log_coef << endl;
 	}
 
 	cell_type = init_cell_type;
@@ -232,6 +238,8 @@ double prev_outside[N];
 double mmm = 0;
 
 double resize = 0;
+
+double ggg = 0;
 
 Cell internal(Cell p, int t, int num)
 {
@@ -290,6 +298,8 @@ Cell internal(Cell p, int t, int num)
 	rep(i, N) p.mol[i] -= prev[i] * growth;
 	p.nut -= prev_nut * growth;
 
+	ggg += growth / time_bunkai;
+
 	//test用 take_log_grow
 	// take_log_grow << p.nut - prev_nut << " ";
 	// double grow = p.nut - prev_nut;
@@ -300,7 +310,7 @@ Cell internal(Cell p, int t, int num)
 	// take_log_grow << grow << endl;
 
 	if (t % 1000 == 0) { //take_log_inside << endl; の解除も忘れない
-	take_log_inside << p.nut << " ";
+	// take_log_inside << p.nut << " ";
 	// rep(i, N) take_log_inside << p.mol[i] << " "; // test用 nodeが一つしかない時
 	// }
 		// take_log_inside1 << p.mol[1] << " ";
@@ -364,7 +374,7 @@ void process(int t)
 	}
 	
 	if (t % 1000 == 0) {
-		take_log_inside << endl;
+		// take_log_inside << endl;
 	// if (1) take_log_inside << endl;
 		// take_log_inside1 << endl;
 		// take_log_inside2 << endl;
@@ -394,20 +404,22 @@ void process(int t)
 
 	if (t % 1000 == 0) {
 	// if (1) {
-		take_log_outside << outside_nut << " ";
-		rep(i, N) {
-			take_log_outside << outside[i] << " ";
-		}
-		take_log_outside << endl;
+		// take_log_outside << outside_nut << " ";
+		// rep(i, N) {
+		// 	take_log_outside << outside[i] << " ";
+		// }
+		// take_log_outside << endl;
 	}
 }
 
 // int main(void)
-void main_(int get_rand)
+void main_(int get_rand, double get_coef)
 {
 	//randomの種を与える
 	srand(get_rand);
 	// srand(1);
+
+	ggg = 0;
 
 	//tun_time回走らせる
 	rep(l, run_time) {
@@ -416,15 +428,15 @@ void main_(int get_rand)
 		rep(t, time_end) {
 			process(t);
 			// if (t % 50000 == 30000) evolve();
-			if (t == 10000) rep(i, 50) evolve();
+			// if (t == 10000) rep(i, 50) evolve();
 			// if (t % 2000 == 1000 && cell_type < 50) rep(i, 1) evolve();
 			// if (t == 60000) rep(i, 15) cell[i + 1].go[1] = 0;
 			cout << t << " ";
 			rep(i, cell_type) cout << fixed << setprecision(8) << cell[i].size << " ";
 			cout << endl;
 			if (t % 100 == 0) {
-				rep(i, cell_type) take_log_type << cell[i].size << " ";
-				take_log_type << endl;
+				// rep(i, cell_type) take_log_type << cell[i].size << " ";
+				// take_log_type << endl;
 			}
 		}
 	}
@@ -450,42 +462,41 @@ void main_(int get_rand)
 	}
 
 	double max_pop = 0;
-	int max_pop_num = 0;
 	int count_pop = 0;
 	rep(i, cell_type) {
 		if (i == 0) cout << cell[i].size << " ";
 		else {
-			if (max_pop < cell[i].size) {
-				max_pop = cell[i].size;
-				max_pop_num = i;
-			}
+			if (max_pop < cell[i].size) max_pop = cell[i].size;
 			if (cell[i].size > 0.05) count_pop++;
 			else if (cell[i].size > 0.01 && prev_size[i] < cell[i].size) count_pop++;
 		}
 	}
 	cout << max_pop << " " << count_pop << endl;
 	take_log_pop << aver_nut << " " << cell[0].size << " " << max_pop << " " << count_pop << endl;
-	rep (i, N) take_log_pop_coef << begin_coef.at(max_pop_num).at(i) << " ";
-	take_log_pop_coef << endl;
-	rep (i, N) take_log_oya_coef << begin_coef.at(0).at(i) << " ";
-	take_log_oya_coef << endl;
 
 	cout << up << endl;
+
+	take_log_growth << aver_nut << " " << get_coef << " " << ggg / time_end << endl;
 
 	// return 0;
 }
 int main(void)
 {
 	// double give_nut[15] = {0.00001, 0.00005, 0.00007, 0.0001, 0.0003, 0.0005, 0.0007, 0.001, 0.003, 0.005, 0.007, 0.01, 0.05, 0.1};
-	// double give_nut[13] = {0.004, 0.009, 0.015, 0.025, 0.035, 0.045, 0.055, 0.065, 0.07, 0.075, 0.09, 0.11, 0.15};
+	double give_nut[15] = {0.05, 0.08, 0.1, 0.12, 0.15, 0.18, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
+	// double give_coef[10] = {0.1, 0.5, 1.0, 2.0, 4.0, 6.0, 8.0, 10, 12, 15};
 	
 	rep(i, 1) {
 		// aver_nut = give_nut[i];
 		// rep(j, N) init_go[j] = 0;
 		// init_go[i] = 1;
-		rep(j, 1) {
-			aver_nut = 0.1;
-			main_(i + 1);
+		desig_init(0);
+		rep(j, 15) {
+			aver_nut = give_nut[j];
+			rep(k, 1) {
+				// sum_init(0, give_coef[k] * 10);
+				main_(i + 1, -1);
+			}
 		}
 	}
 	return 0;

@@ -25,7 +25,7 @@ namespace {
 	// ofstream take_log_sum("data_equ1_sum.log");
 	// ofstream take_log_boxcon("data_equ1_boxcon.log");
 	// ofstream take_log_grow("data_equ1_grow.log");
-	ofstream take_log_pop("data_equ4_pop.log");
+	ofstream take_log_pop("data_equ6_pop.log");
 }
 
 
@@ -459,9 +459,11 @@ void main_(int get_rand)
 
 int main(void)
 {
-	double give_nut[10] = {0.0001, 0.0005, 0.0007, 0.001, 0.003, 0.005, 0.01, 0.05, 0.1};
+	// double give_nut[12] = {0.0001, 0.0002, 0.0005, 0.0007, 0.001, 0.003, 0.005, 0.007, 0.01, 0.05, 0.1};
+	// double give_nut[10] = {0.002, 0.004, 0.006, 0.008, 0.02, 0.03, 0.04, 0.06, 0.08, 0.12};
+	double give_nut[13] = {0.004, 0.009, 0.015, 0.025, 0.035, 0.045, 0.055, 0.065, 0.07, 0.075, 0.09, 0.11, 0.15};
 	
-	rep(i, 10) {
+	rep(i, 13) {
 		aver_nut = give_nut[i];
 		// rep(j, N) init_go[j] = 0;
 		// init_go[i] = 1;
